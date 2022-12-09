@@ -116,6 +116,8 @@ BLOCK = 1024
                           for seed in [0, 42, 124, 54, 0xffffffff, 0xdeadbeefcafeb0ba]]
                          )
 def test_randint(size, seed, device='cuda'):
+    if torch.version.hip is not None:
+        pytest.skip(f"test_randint currently has segfaults on ROCM")
     size = list(map(int, size.split(',')))
 
     @triton.jit
@@ -142,6 +144,8 @@ def test_randint(size, seed, device='cuda'):
                           for seed in [0, 42, 124, 54]]
                          )
 def test_rand(size, seed, device='cuda'):
+    if torch.version.hip is not None:
+        pytest.skip(f"test_rand currently has segfaults on ROCM")
     @triton.jit
     def kernel(X, N, seed):
         offset = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)
@@ -163,6 +167,8 @@ def test_rand(size, seed, device='cuda'):
                           for seed in [0, 42, 124, 54]]
                          )
 def test_randn(size, seed, device='cuda'):
+    if torch.version.hip is not None:
+        pytest.skip(f"test_randn currently has segfaults on ROCM")
     @triton.jit
     def kernel(X, N, seed):
         offset = tl.program_id(0) * BLOCK + tl.arange(0, BLOCK)

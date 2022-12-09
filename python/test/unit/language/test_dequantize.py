@@ -6,6 +6,7 @@ import torch
 
 import triton
 import triton.language as tl
+import pytest
 
 
 @triton.jit
@@ -101,6 +102,8 @@ def dequantize_kernel_scale_shift_int2(
 
 
 def test_dequantize_int8() -> None:
+    if torch.version.hip is not None:
+        pytest.skip(f"test_dequantize_int8 currently has segfaults on ROCM")
     for i in range(10):
         if i < 5:
             size = random.randrange(16, 128, 4)
@@ -149,6 +152,8 @@ def test_dequantize_int8() -> None:
 
 
 def test_dequantize_int4() -> None:
+    if torch.version.hip is not None:
+        pytest.skip(f"test_dequantize_int4 currently has segfaults on ROCM")
     for i in range(10):
         if i < 5:
             size = random.randrange(16, 256, 8)
@@ -204,6 +209,8 @@ def test_dequantize_int4() -> None:
 
 
 def test_dequantize_int2() -> None:
+    if torch.version.hip is not None:
+        pytest.skip(f"test_dequantize_int2 currently has segfaults on ROCM")
     for i in range(10):
         if i < 5:
             size = random.randrange(16, 256, 8)
