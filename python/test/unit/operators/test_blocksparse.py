@@ -10,6 +10,8 @@ import triton
 @pytest.mark.parametrize("BLOCK", [16, 32, 64])
 @pytest.mark.parametrize("DTYPE", [torch.float16])
 def test_matmul(MODE, TRANS_A, TRANS_B, BLOCK, DTYPE, Z=3, H=2, M=512, N=384, K=256):
+    if torch.version.hip is not None:
+        pytest.skip(f"test_matmul currently has segfaults on ROCM")
     seed = 0
     torch.manual_seed(seed)
     is_sdd = MODE == "sdd"
@@ -74,6 +76,8 @@ configs = [
 @pytest.mark.parametrize("is_dense", [False, True])
 @pytest.mark.parametrize("BLOCK, WIDTH", configs)
 def test_softmax(BLOCK, WIDTH, is_dense, Z=2, H=2, is_causal=True, scale=0.4):
+    if torch.version.hip is not None:
+        pytest.skip(f"test_softmax currently has segfaults on ROCM")
     # set seed
     torch.random.manual_seed(0)
     Z, H, M, N = 2, 3, WIDTH, WIDTH
@@ -125,6 +129,8 @@ def test_attention_fwd_bwd(
     batch_size=2,
     n_heads=2,
 ):
+    if torch.version.hip is not None:
+        pytest.skip(f"test_softmax currently has segfaults on ROCM")
     # inputs
     qkv_shape = (batch_size, n_heads, n_ctx, 64)
     qkvs = [
