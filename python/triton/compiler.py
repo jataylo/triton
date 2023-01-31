@@ -1715,7 +1715,7 @@ def compile(fn, **kwargs):
                 fn_cache_manager.put(next_module, f"{name}.{ir}")
         if os.path.exists(path):
             metadata["ctime"][ir] = os.path.getctime(path)
-        asm[ir] = next_module if ir == "cubin" else str(next_module)
+        asm[ir] = next_module if ir in ("cubin", "llir") else str(next_module)
         if ir == "llir" and "shared" not in metadata:
             metadata["shared"] = _triton.get_shared_memory_size(module)
         if ir == "ptx":
