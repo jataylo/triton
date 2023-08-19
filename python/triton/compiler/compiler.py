@@ -209,7 +209,7 @@ def get_amdgcn_bitcode_paths(arch):
 
 def get_amdgpu_arch_fulldetails():
     """
-    get the amdgpu fulll ISA details for compiling:
+    get the amdgpu full ISA details for compiling:
     i.e., arch_triple: amdgcn-amd-amdhsa; arch_name: gfx906; arch_features: sramecc+:xnack-
     """
     try:
@@ -223,9 +223,9 @@ def get_amdgpu_arch_fulldetails():
         arch_features = ""
 
         return [arch_triple, arch_name, arch_features, warp_size]
-    except BaseException:
+    except BaseException as e:
+        print("Error: Attempting to get amgpu ISA Details {}".format(e))
         return None
-
 
 def llir_to_amdgcn_and_hsaco(mod: Any, gfx_arch: str, gfx_triple: str, gfx_features: str) -> Tuple[str, str]:
     '''
@@ -387,7 +387,7 @@ def compile(fn, **kwargs):
     _device_backend = get_backend(device_type)
 
     if device_type in ["cuda", "hip"]:
-        arch = get_architecture_descriptor(kwargs.get("cc", None))
+        arch = get_architecture_descriptor(None if device_type == "hip" else kwargs.get("cc", None))
     else:
         _device_backend = get_backend(device_type)
         assert _device_backend
