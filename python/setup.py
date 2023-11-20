@@ -73,17 +73,15 @@ def get_llvm_package_info():
     if arch == 'aarch64':
         arch = 'arm64'
     if system == "Darwin":
+        system_suffix = "apple-darwin"
         arch = platform.machine()
-        system_suffix = f"macos-{arch}"
     elif system == "Linux":
-        # TODO: arm64
         vglibc = tuple(map(int, platform.libc_ver()[1].split('.')))
         vglibc = vglibc[0] * 100 + vglibc[1]
         linux_suffix = 'ubuntu-18.04' if vglibc > 217 else 'centos-7'
+        system_suffix = f"linux-gnu-{linux_suffix}"
     else:
         return Package("llvm", "LLVM-C.lib", "", "LLVM_INCLUDE_DIRS", "LLVM_LIBRARY_DIR", "LLVM_SYSPATH")
-    # use_assert_enabled_llvm = check_env_flag("TRITON_USE_ASSERT_ENABLED_LLVM", "False")
-    # release_suffix = "assert" if use_assert_enabled_llvm else "release"
     use_assert_enabled_llvm = check_env_flag("TRITON_USE_ASSERT_ENABLED_LLVM", "False")
     release_suffix = "assert" if use_assert_enabled_llvm else "release"
     name = f'llvm+mlir-17.0.0-{arch}-{system_suffix}-{release_suffix}'
@@ -93,6 +91,7 @@ def get_llvm_package_info():
     if arch == 'arm64' and 'linux' in system_suffix:
         url = f"https://github.com/acollins3/triton-llvm-releases/releases/download/{version}/{name}.tar.xz"
     return Package("llvm", name, url, "LLVM_INCLUDE_DIRS", "LLVM_LIBRARY_DIR", "LLVM_SYSPATH")
+
 
 
 def get_thirdparty_packages(triton_cache_path):
