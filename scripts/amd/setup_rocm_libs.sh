@@ -9,7 +9,7 @@ fi
 
 # Check TRITON_ROCM_DIR is set
 if [[ -z "${TRITON_ROCM_DIR}" ]]; then
-  export TRITON_ROCM_DIR=python/triton/third_party/rocm
+  export TRITON_ROCM_DIR=python/triton/third_party/hip
 fi
 
 # Create triton lib directory
