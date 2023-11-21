@@ -373,15 +373,15 @@ def get_arch_default_num_warps(device_type):
 
 @functools.lru_cache
 def get_arch_default_num_stages(device_type, capability=None):
-    if device_type == "cuda":
-        num_stages = 3 if get_cuda_capability(capability) >= 75 else 2
-    else:
-        _device_backend = get_backend(device_type)
-        assert _device_backend
-        arch = _device_backend.get_architecture_descriptor()
-        num_stages = arch["num_stages"]
+    #if device_type == "cuda":
+    #    num_stages = 3 if get_cuda_capability(capability) >= 75 else 2
+    #else:
+    #    _device_backend = get_backend(device_type)
+    #    assert _device_backend
+    #    arch = _device_backend.get_architecture_descriptor()
+    #    num_stages = arch["num_stages"]
 
-    return num_stages
+    return 0
 
 
 def add_cuda_stages(target, extern_libs, stages):
