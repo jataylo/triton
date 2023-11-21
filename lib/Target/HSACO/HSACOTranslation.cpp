@@ -232,13 +232,13 @@ std::string generate_hsaco(llvm::Module *module, const std::string &triple,
                                               .parent_path()
                                               .parent_path() /
                                               "triton" / "third_party" /
-                                              "rocm" / "llvm" / "bin" / "ld.lld";
+                                              "hip" / "llvm" / "bin" / "ld.lld";
   std::string lld_path = compiletime_path.string();
-  if (!std::filesystem::exists(lld_path)) {
+  /*if (!std::filesystem::exists(lld_path)) {
     std::string rocm_path = ::triton::tools::getenv("ROCM_PATH");
     lld_path = (rocm_path.empty()) ? ROCM_DEFAULT_DIR : rocm_path;
     lld_path += "/llvm/bin/ld.lld";
-  }
+  }*/
 
   int lld_result =
       llvm::sys::ExecuteAndWait(lld_path,
