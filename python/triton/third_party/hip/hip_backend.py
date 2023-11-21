@@ -273,7 +273,6 @@ def get_amdgcn_bitcode_paths(gfx_arch: str):
     return amdgcn_bitcode_paths
 
 
-
 def get_amdgpu_arch_fulldetails():
     """
     get the amdgpu full ISA details for compiling:
@@ -296,9 +295,6 @@ def get_amdgpu_arch_fulldetails():
     except BaseException as e:
         print("Error: Attempting to get amgpu ISA Details {}".format(e))
         return None
-    except BaseException:
-        return None
-
 
 
 def get_kernel_name(src: str, pattern: str) -> str:
