@@ -5,13 +5,16 @@ PATCHELF_BIN=patchelf
 ROCM_LIB=third_party/hip/lib
 ROCM_LD=third_party/hip/llvm/bin
 PREFIX=triton
+FORCE_RPATH=--force-rpath
 
 fname_without_so_number() {
     LINKNAME=$(echo $1 | sed -e 's/\.so.*/.so/g')
+    echo "Link name without so number: $LINKNAME"
     echo "$LINKNAME"
 }
 
 replace_needed_sofiles() {
+    echo "Replacing needed sofiles in directory: $1"
     find $1 -name '*.so*' -o -name 'ld.lld' | while read sofile; do
         origname=$2
         patchedname=$3
@@ -21,84 +24,107 @@ replace_needed_sofiles() {
             ERRCODE=$?
             set -e
             if [ "$ERRCODE" -eq "0" ]; then
-                echo "patching $sofile entry $origname to $patchedname"
+                echo "Patching $sofile: replacing $origname with $patchedname"
                 $PATCHELF_BIN --replace-needed $origname $patchedname $sofile
+            else
+                echo "No patch needed for $sofile"
             fi
         fi
     done
 }
 
+echo "Creating temporary directory..."
 mkdir  -p "/tmp_dir"
 pushd /tmp_dir
-#for pkg in /$WHEELHOUSE_DIR/*triton*linux*.whl; do
+    
+
 for pkg in /$WHEELHOUSE_DIR/*triton*.whl; do
-    echo "Modifying $pkg"
+    echo "Modifying package: $pkg"
     rm -rf tmp
     mkdir -p tmp
     cd tmp
     cp $pkg .
+    echo "Unzipping package..."
     unzip -q $(basename $pkg)
     rm -f $(basename $pkg)
+
+    echo "Setting RPATH for $PREFIX/$ROCM_LD/ld.lld"
     $PATCHELF_BIN --set-rpath ${LD_SO_RPATH:-'$ORIGIN:$ORIGIN/../../lib'} $PREFIX/$ROCM_LD/ld.lld
+    echo "Current RPATH for $PREFIX/$ROCM_LD/ld.lld:"
     $PATCHELF_BIN --print-rpath $PREFIX/$ROCM_LD/ld.lld
+
+
+    echo "Modifying libtriton.so dependencies..."
     # Modify libtriton.so as it sits in _C directory apart from it'd dependencies
     find $PREFIX/_C -type f -name "*.so*" | while read sofile; do
-        echo "Setting rpath of $sofile"
-        $PATCHELF_BIN --set-rpath ${C_SO_RPATH:-'$ORIGIN:$ORIGIN/'../$ROCM_LIB} ${FORCE_RPATH:-} $sofile
+        echo "Setting RPATH for $sofile"
+        $PATCHELF_BIN --set-rpath ${C_SO_RPATH:-'$ORIGIN:$ORIGIN/'../$ROCM_LIB} ${FORCE_RPATH:+--force-rpath} $sofile
+        echo "Current RPATH for $sofile:"
         $PATCHELF_BIN --print-rpath $sofile
     done
+
 
     # All included dependencies are included in a single lib directory
     deps=()
     deps_soname=()
+    echo "Processing dependencies in $PREFIX/$ROCM_LIB"
     while read sofile; do
-        echo "Setting rpath of $sofile to ${LIB_SO_RPATH:-'$ORIGIN'}"
-        $PATCHELF_BIN --set-rpath ${LIB_SO_RPATH:-'$ORIGIN'} ${FORCE_RPATH:-} $sofile
+        echo "Setting RPATH for $sofile to ${LIB_SO_RPATH:-'$ORIGIN'}"
+        $PATCHELF_BIN --set-rpath ${LIB_SO_RPATH:-'$ORIGIN'} ${FORCE_RPATH:+--force-rpath} $sofile
+        echo "Current RPATH for $sofile:"
         $PATCHELF_BIN --print-rpath $sofile
         deps+=("$sofile")
         deps_soname+=("$(basename $sofile)")
     done < <(find $PREFIX/$ROCM_LIB -type f -name "*.so*")
 
-    # Get list of patched names in our third_party/rocm/lib directory
+
+
+    # Gopy and rename dependencies, adjusting their names
+    echo "Copying and renaming dependencies..."
     patched=()
     for filepath in "${deps[@]}"; do
         filename=$(basename $filepath)
         destpath=$PREFIX/$ROCM_LIB/$filename
         if [[ "$filepath" != "$destpath" ]]; then
+            echo "Copying $filepath to $destpath"
             cp $filepath $destpath
         fi
         patchedpath=$(fname_without_so_number $destpath)
         patchedname=$(basename $patchedpath)
         if [[ "$destpath" != "$patchedpath" ]]; then
+            echo "Renaming $destpath to $patchedpath"
             mv $destpath $patchedpath
         fi
         patched+=("$patchedname")
-        echo "Copied $filepath to $patchedpath"
     done
 
-    # Go through all required shared objects and see if any of our other objects are dependants.  If so, replace so.ver wth so
+    # Replace shared object versions with their corresponding patched names
+    echo "Replacing shared object versions..."
     for ((i=0;i<${#deps[@]};++i)); do
-        echo "replacing "${deps_soname[i]} ${patched[i]}
+        echo "Replacing ${deps_soname[i]} with ${patched[i]}"
         replace_needed_sofiles $PREFIX/$ROCM_LIB ${deps_soname[i]} ${patched[i]}
         replace_needed_sofiles $PREFIX/_C ${deps_soname[i]} ${patched[i]}
         replace_needed_sofiles $PREFIX/$ROCM_LD ${deps_soname[i]} ${patched[i]}
-
     done
 
-    # Re-bundle whl with so adjustments
+    # Re-bundle the wheel file with so adjustments
+    echo "Re-bundling the wheel file..."
     zip -rqy $(basename $pkg) *
 
-    # Add manylinux2014 to whl name for pypi.  I believe we have met the criteria for manylinux based on our
-    # toolchain and rpath changes to make each whl self contained and built with manylinux versions of python
+    # Rename the wheel file for manylinux compatibility
+    echo "Renaming wheel file for manylinux compatibility..."
     if [[ -z "${MANYLINUX_VERSION}" ]]; then
         newpkg=$pkg
     else
         newpkg=$(echo $pkg | sed -e "s/\linux_x86_64/${MANYLINUX_VERSION}/g")
+        echo "New package name: $newpkg"
     fi
 
-    # Remove original whl
+    # Cleanup and move rebuilt wheel to original location
+    echo "Cleaning up and moving rebuilt wheel..."
     rm -f $pkg
-
-    # Move rebuilt whl to original location with new name.
     mv $(basename $pkg) $newpkg
 done
+
+echo "Script completed."
+popd
