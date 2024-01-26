@@ -78,35 +78,6 @@ for pkg in /$WHEELHOUSE_DIR/*triton*.whl; do
     done < <(find $PREFIX/$ROCM_LIB -type f -name "*.so*")
 
 
-
-    # Gopy and rename dependencies, adjusting their names
-    echo "Copying and renaming dependencies..."
-    patched=()
-    for filepath in "${deps[@]}"; do
-        filename=$(basename $filepath)
-        destpath=$PREFIX/$ROCM_LIB/$filename
-        if [[ "$filepath" != "$destpath" ]]; then
-            echo "Copying $filepath to $destpath"
-            cp $filepath $destpath
-        fi
-        patchedpath=$(fname_without_so_number $destpath)
-        patchedname=$(basename $patchedpath)
-        if [[ "$destpath" != "$patchedpath" ]]; then
-            echo "Renaming $destpath to $patchedpath"
-            mv $destpath $patchedpath
-        fi
-        patched+=("$patchedname")
-    done
-
-    # Replace shared object versions with their corresponding patched names
-    echo "Replacing shared object versions..."
-    for ((i=0;i<${#deps[@]};++i)); do
-        echo "Replacing ${deps_soname[i]} with ${patched[i]}"
-        replace_needed_sofiles $PREFIX/$ROCM_LIB ${deps_soname[i]} ${patched[i]}
-        replace_needed_sofiles $PREFIX/_C ${deps_soname[i]} ${patched[i]}
-        replace_needed_sofiles $PREFIX/$ROCM_LD ${deps_soname[i]} ${patched[i]}
-    done
-
     # Re-bundle the wheel file with so adjustments
     echo "Re-bundling the wheel file..."
     zip -rqy $(basename $pkg) *
