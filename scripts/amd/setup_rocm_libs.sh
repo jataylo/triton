@@ -33,7 +33,7 @@ done
 # Required ROCm libraries 
 ROCM_SO=(
     "libhsa-runtime64.so.1"
-    "libamdhip64.so.5"
+    "libamdhip64.so.6"
     "libamd_comgr.so.2"
     "libdrm.so.2"
     "libdrm_amdgpu.so.1"
