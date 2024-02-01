@@ -33,7 +33,7 @@ done
 # Required ROCm libraries 
 ROCM_SO=(
     "libhsa-runtime64.so.1"
-    "libamdhip64.so.6"
+    "libamdhip64.so.5"
     "libamd_comgr.so.2"
     "libdrm.so.2"
     "libdrm_amdgpu.so.1"
@@ -71,10 +71,4 @@ cp -r $ROCM_HOME/include $TRITON_ROCM_DIR/
 # Copy linker
 mkdir -p $TRITON_ROCM_DIR/llvm/bin
 cp $ROCM_HOME/llvm/bin/ld.lld $TRITON_ROCM_DIR/llvm/bin/
-
-# hip_utils.so compilation in triton will look for numbered triton so number
-# with `-lamdhip64` in compilation. As a workaround symbolic link the numbered
-# so's to the library packaged with the wheel
-ln -s libamdhip64.so libamdhip64.so.5
-ln -s libamdhip64.so libamdhip64.so.6
 
