@@ -86,6 +86,8 @@ class HIPBackend(BaseBackend):
         return target[0] == 'hip'
 
     def __init__(self, target: tuple) -> None:
+        print("")
+        print("target:", target)
         super().__init__(target)
         assert isinstance(target, tuple) and len(target) == 3
         assert isinstance(target[1], str)

@@ -343,6 +343,8 @@ class CompiledKernel:
         self._init_handles()
 
         def runner(*args, stream=None):
+            print("CompiledKernel.runner")
+            print("args: ", args)
             if stream is None:
                 device = driver.active.get_current_device()
                 stream = driver.active.get_current_stream(device)

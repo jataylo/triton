@@ -54,6 +54,5 @@ docs/getting-started/tutorials
 # Vim
 *.swp
 
-# log
 log*
 scripts
