@@ -55,5 +55,5 @@ docs/getting-started/tutorials
 *.swp
 
 # log
-log
+log*
 scripts
