@@ -9,7 +9,6 @@ static inline void gpuAssert(hipError_t code, const char *file, int line) {
   {
     if (code != HIP_SUCCESS) {
       {
-        printf("third_party/amd/backend/driver.c: gpuAssert");
         const char *prefix = "Triton Error [HIP]: ";
         const char *str = hipGetErrorString(code);
         char err[1024] = {0};
