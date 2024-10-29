@@ -116,7 +116,7 @@ ScratchConfig getScratchConfigForCvt(RankedTensorType srcTy,
   Attribute srcLayout = srcTy.getEncoding();
   Attribute dstLayout = dstTy.getEncoding();
 
-  assert(!isMfmaToDotShortcut(srcTy, dstTy));
+  assert(cvtNeedsSharedMemory(srcTy, dstTy));
 
   auto inOrd = gpu::getOrder(srcLayout);
   auto outOrd = gpu::getOrder(dstLayout);
