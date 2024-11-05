@@ -83,6 +83,9 @@ static SmallVector<unsigned> getRepShapeForCvt(RankedTensorType srcTy,
   assert(srcTy.getRank() == dstTy.getRank() &&
          "src and dst must have the same rank");
 
+  assert(srcTy.getRank() == dstTy.getRank() &&
+         "src and dst must have the same rank");
+
   unsigned rank = dstTy.getRank();
   SmallVector<unsigned> repShape(rank);
   for (unsigned d = 0; d < rank; ++d) {
