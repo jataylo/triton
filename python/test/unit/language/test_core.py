@@ -1720,6 +1720,7 @@ def test_store_constant(dtype_str, num_ctas, device):
 
     assert torch.all(output == ref)
 
+<<<<<<< HEAD
 
 @pytest.mark.interpreter
 @pytest.mark.parametrize("num_ctas", num_ctas_list)
@@ -1739,7 +1740,10 @@ def test_store_constant_default_dtype(num_ctas, device):
     output = torch.zeros([block_size], dtype=getattr(torch, 'int32'), device=device)
     kernel[(1, )](output, block_size, BLOCK_SIZE=block_size, num_ctas=num_ctas)
 
-    assert torch.all(output == ref)
+    if constant_field == "value":
+        assert torch.all(output == ref)
+    else:
+        assert torch.all(output == 0)
 
 
 def test_load_store_same_ptr(device):
