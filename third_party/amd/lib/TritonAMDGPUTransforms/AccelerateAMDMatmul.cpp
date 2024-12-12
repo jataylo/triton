@@ -512,7 +512,8 @@ public:
           aElemType == ScaleDotElemType::E5M2))
       return rewriter.notifyMatchFailure(dotOp, "NYI: non-mxfp8/mxfp4 LHS");
     if (!(bElemType == ScaleDotElemType::E4M3 ||
-          bElemType == ScaleDotElemType::E5M2))
+          bElemType == ScaleDotElemType::E5M2 ||
+	  bElemType == ScaleDotElemType::BF16))
       return rewriter.notifyMatchFailure(dotOp, "NYI: non-fp8 RHS");
 
     MLIRContext *ctx = dotOp.getContext();
@@ -577,8 +578,8 @@ public:
       if (idx == 0 && type == ScaleDotElemType::E2M1)
         return v;
 
-      auto vTypeBf16 = RankedTensorType::get(vType.getShape(),
-                                             rewriter.getBF16Type(), newVEnc);
+      auto vTypeBf16 = RankedTensorType::get(
+          vType.getShape(), rewriter.getBF16Type(), newVEncoding);
       return rewriter.create<FpToFpOp>(v.getLoc(), vTypeBf16, v);
     };
     a = toMMABf16(a, 0, aElemType);
